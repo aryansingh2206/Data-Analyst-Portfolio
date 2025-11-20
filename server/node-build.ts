@@ -1,21 +1,23 @@
 import path from "path";
 import { createServer } from "./index";
-import * as express from "express";
+import express from "express";
+import { fileURLToPath } from "url";
 
 const app = createServer();
 const port = process.env.PORT || 3000;
 
-// In production, serve the built SPA files
-const __dirname = import.meta.dirname;
+// Fix dirname resolution for Node ESM
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Path to built client files
 const distPath = path.join(__dirname, "../spa");
 
 // Serve static files
 app.use(express.static(distPath));
 
-// Handle React Router - serve index.html for all non-API routes
-// 🚫 No wildcard path here, so path-to-regexp won't scream
+// Serve index.html for all non-API routes (React Router)
 app.use((req, res, next) => {
-  // Don't serve index.html for API or health routes
   if (req.path.startsWith("/api/") || req.path.startsWith("/health")) {
     return next();
   }
